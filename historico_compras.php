@@ -377,6 +377,7 @@ unset($venda);
                 <?php endif; ?>
             </a>
             <a href="logout.php">Sair</a>
+            
         </nav>
     </header>
 
