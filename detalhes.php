@@ -1,0 +1,377 @@
+<?php
+// detalhes.php - Página de detalhes do jogo
+session_start();
+
+// Verificar se usuário está logado
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+// Configurações do banco
+$host = "localhost";
+$dbname = "gamestore";
+$username = "root";
+$password = "";
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Erro de conexão: " . $e->getMessage());
+}
+
+// Buscar jogo pelo ID
+$jogo_id = $_GET['id'] ?? null;
+
+if (!$jogo_id) {
+    header("Location: index.php");
+    exit;
+}
+
+// Buscar dados do jogo
+$stmt = $pdo->prepare("SELECT * FROM jogos WHERE id = ?");
+$stmt->execute([$jogo_id]);
+$jogo = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$jogo) {
+    die("Jogo não encontrado");
+}
+
+// Buscar galeria de imagens
+$stmt_galeria = $pdo->prepare("SELECT imagem_url FROM jogo_galeria WHERE jogo_id = ? ORDER BY ordem");
+$stmt_galeria->execute([$jogo_id]);
+$galeria = $stmt_galeria->fetchAll(PDO::FETCH_ASSOC);
+
+// Buscar requisitos
+$stmt_requisitos_min = $pdo->prepare("SELECT requisito FROM jogo_requisitos WHERE jogo_id = ? AND tipo = 'minimo' ORDER BY ordem");
+$stmt_requisitos_min->execute([$jogo_id]);
+$requisitos_minimos = $stmt_requisitos_min->fetchAll(PDO::FETCH_COLUMN);
+
+$stmt_requisitos_rec = $pdo->prepare("SELECT requisito FROM jogo_requisitos WHERE jogo_id = ? AND tipo = 'recomendado' ORDER BY ordem");
+$stmt_requisitos_rec->execute([$jogo_id]);
+$requisitos_recomendados = $stmt_requisitos_rec->fetchAll(PDO::FETCH_COLUMN);
+
+// Buscar categoria para o breadcrumb
+$categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
+?>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Games Store - <?php echo htmlspecialchars($jogo['titulo']); ?></title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="shortcut icon" href="favicon/fav.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .buy-button {
+            background: linear-gradient(45deg, #4f219e, #853fb0, #b75ec1, #e87fd3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .buy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .in-library-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .detail-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .detail-gallery img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .detail-gallery img:hover {
+            transform: scale(1.05);
+        }
+        
+        .no-data-message {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .requisitos-lista {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .requisitos-lista li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-requirements {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .detail-requirements {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.php">Games Store</a>
+        </div>
+        
+        <nav>
+            <span style="color: var(--text-primary); margin-right: 15px;">Olá, <?php echo $_SESSION['username']; ?>!</span>
+            <a href="index.php">Loja</a>
+            <a href="biblioteca.php">Biblioteca</a>
+            <a href="carrinho.php" class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <?php
+                $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
+                if ($cart_count > 0): ?>
+                    <span class="cart-count"><?php echo $cart_count; ?></span>
+                <?php endif; ?>
+            </a>
+            <a href="logout.php">Sair</a>
+        </nav>
+    </header>
+
+    <main class="main-detail">
+        <div class="detail-breadcrumb">
+            <a href="index.php">Loja</a>
+            / <span id="detail-category-breadcrumb"><?php echo $categoria_nome; ?></span> 
+            / <span id="detail-title-breadcrumb"><?php echo htmlspecialchars($jogo['titulo']); ?></span>
+        </div>
+
+        <section class="content-detail">
+            <div class="detail-left">
+                <div class="detail-banner">
+                    <img id="detail-image" src="<?php echo htmlspecialchars($jogo['imagem_url']); ?>" 
+                         alt="<?php echo htmlspecialchars($jogo['titulo']); ?>">
+                </div>
+
+                <h2>SOBRE ESTE JOGO</h2>
+                <p id="detail-description"><?php echo nl2br(htmlspecialchars($jogo['descricao'] ?? $jogo['descrizao'] ?? 'Descrição não disponível')); ?></p>
+
+                <h2>INFORMAÇÕES</h2>
+                <div class="game-info-details">
+                    <p><strong>Data de Lançamento:</strong> 
+                        <?php echo !empty($jogo['data_lancamento']) && $jogo['data_lancamento'] != '[000]' ? 
+                            date('d/m/Y', strtotime($jogo['data_lancamento'])) : 'Não informada'; ?>
+                    </p>
+                    <p><strong>Categoria:</strong> <?php echo $categoria_nome; ?></p>
+                    <p><strong>Desenvolvedora:</strong> <?php echo htmlspecialchars($jogo['desenvolvedora'] ?? $jogo['desenvolvidos'] ?? 'Não informada'); ?></p>
+                    <p><strong>Publicadora:</strong> <?php echo htmlspecialchars($jogo['publicadora'] ?? $jogo['publicados'] ?? 'Não informada'); ?></p>
+                </div>
+
+                <!-- Seção de Fotos -->
+                <h2>FOTOS</h2>
+                <div class="detail-gallery" id="detail-gallery">
+                    <?php if (count($galeria) > 0): ?>
+                        <?php foreach ($galeria as $foto): ?>
+                            <img src="<?php echo htmlspecialchars($foto['imagem_url']); ?>" 
+                                 alt="Screenshot do jogo" 
+                                 onclick="openImageModal('<?php echo htmlspecialchars($foto['imagem_url']); ?>')">
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="no-data-message">
+                            <i class="fas fa-camera" style="font-size: 48px; margin-bottom: 10px;"></i>
+                            <p>Galeria de fotos não disponível</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Seção de Requisitos -->
+                <h2>REQUISITOS DO SISTEMA</h2>
+                <div class="detail-requirements">
+                    <?php if (count($requisitos_minimos) > 0 || count($requisitos_recomendados) > 0): ?>
+                        <div class="req-column">
+                            <h3>MÍNIMOS</h3>
+                            <ul class="requisitos-lista" id="req-min">
+                                <?php foreach ($requisitos_minimos as $req): ?>
+                                    <li><?php echo htmlspecialchars($req); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                        <div class="req-column">
+                            <h3>RECOMENDADOS</h3>
+                            <ul class="requisitos-lista" id="req-rec">
+                                <?php foreach ($requisitos_recomendados as $req): ?>
+                                    <li><?php echo htmlspecialchars($req); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <div class="no-data-message">
+                            <i class="fas fa-desktop" style="font-size: 48px; margin-bottom: 10px;"></i>
+                            <p>Requisitos do sistema não disponíveis</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="detail-right">
+                <h1 id="detail-title"><?php echo htmlspecialchars($jogo['titulo']); ?></h1>
+                
+                <p class="detail-publisher">
+                    <strong>Publicado por:</strong> 
+                    <span id="detail-publisher-name"><?php echo htmlspecialchars($jogo['publicadora'] ?? $jogo['publicados'] ?? 'Não informada'); ?></span>
+                </p>
+                
+                <p class="detail-developer">
+                    <strong>Desenvolvido por:</strong> 
+                    <span id="detail-developer-name"><?php echo htmlspecialchars($jogo['desenvolvedora'] ?? $jogo['desenvolvidos'] ?? 'Não informada'); ?></span>
+                </p>
+
+                <?php
+                // Verificar se o jogo já está na biblioteca do usuário
+                $stmt_lib = $pdo->prepare("SELECT id FROM biblioteca WHERE usuario_id = ? AND jogo_id = ?");
+                $stmt_lib->execute([$_SESSION['user_id'], $jogo_id]);
+                $in_library = $stmt_lib->fetch();
+                ?>
+
+                <div class="buy-box">
+                    <span class="detail-price" id="detail-price">
+                        R$ <?php echo number_format($jogo['preco'], 2, ',', '.'); ?>
+                    </span>
+                    
+                    <?php if ($in_library): ?>
+                        <div class="in-library-badge">
+                            <i class="fas fa-check"></i> Jogo na sua Biblioteca
+                        </div>
+                        <button class="buy-button" disabled style="background: #666;">
+                            <i class="fas fa-check"></i> Já Adquirido
+                        </button>
+                    <?php else: ?>
+                        <form method="POST" action="add_to_cart.php" class="add-to-cart-form">
+                            <input type="hidden" name="jogo_id" value="<?php echo $jogo['id']; ?>">
+                            <input type="hidden" name="jogo_titulo" value="<?php echo htmlspecialchars($jogo['titulo']); ?>">
+                            <input type="hidden" name="jogo_preco" value="<?php echo $jogo['preco']; ?>">
+                            <input type="hidden" name="jogo_imagem" value="<?php echo htmlspecialchars($jogo['imagem_url']); ?>">
+                            <button type="submit" class="buy-button">
+                                <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: Adicionado ao Carrinho -->
+    <div id="cart-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="position:relative; text-align:center;">
+            <span class="close-btn" id="close-cart-modal">&times;</span>
+            <i class="fas fa-check-circle" style="font-size:60px; color:#55ff99;"></i>
+            <h2>Adicionado ao Carrinho!</h2>
+            <p><strong id="modal-game-name"></strong> foi adicionado ao seu carrinho.</p>
+        </div>
+    </div>
+
+    <!-- MODAL: Imagem Ampliada -->
+    <div id="image-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="position:relative; text-align:center; max-width:90%;">
+            <span class="close-btn" id="close-image-modal">&times;</span>
+            <img id="modal-image" src="" alt="Imagem ampliada" style="max-width:100%; max-height:80vh;">
+        </div>
+    </div>
+
+    <script>
+        // Adicionar ao carrinho com AJAX
+        document.querySelector('.add-to-cart-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('modal-game-name').textContent = data.jogo_titulo;
+                    document.getElementById('cart-modal').style.display = 'flex';
+                    
+                    // Atualizar contador do carrinho
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount) {
+                        cartCount.textContent = parseInt(cartCount.textContent) + 1;
+                    } else {
+                        const cartIcon = document.querySelector('.cart-icon');
+                        cartIcon.innerHTML = '<i class="fas fa-shopping-cart"></i><span class="cart-count">1</span>';
+                    }
+                    
+                    // Fechar modal após 2 segundos e recarregar
+                    setTimeout(() => {
+                        document.getElementById('cart-modal').style.display = 'none';
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar ao carrinho');
+            });
+        });
+
+        // Fechar modais
+        document.getElementById('close-cart-modal').addEventListener('click', function() {
+            document.getElementById('cart-modal').style.display = 'none';
+        });
+
+        document.getElementById('close-image-modal').addEventListener('click', function() {
+            document.getElementById('image-modal').style.display = 'none';
+        });
+
+        // Abrir imagem em modal
+        function openImageModal(imageUrl) {
+            document.getElementById('modal-image').src = imageUrl;
+            document.getElementById('image-modal').style.display = 'flex';
+        }
+
+        // Fechar modal ao clicar fora
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
