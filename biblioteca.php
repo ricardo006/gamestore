@@ -229,11 +229,41 @@ foreach ($jogos_biblioteca as $jogo) {
             gap: 5px;
         }
 
+        /* SISTEMA DE GRID CORRIGIDO */
+        .game-catalog {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+
+        /* Responsividade do grid */
+        @media (max-width: 768px) {
+            .game-catalog {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+                padding: 15px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-catalog {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 10px 0;
+            }
+        }
+
+        /* Quando o grid estiver vazio, ocultar completamente */
+        .game-catalog:empty {
+            display: none;
+        }
+
         /* Estilos para o card da biblioteca */
         .game-card {
             position: relative;
             background: var(--bg-medium);
-            border-radius: 20px;
+            border-radius: 30px;
             overflow: hidden;
             transition: all 0.3s ease;
             border: 1px solid rgba(255,255,255,0.1);
@@ -264,7 +294,6 @@ foreach ($jogos_biblioteca as $jogo) {
         .game-banner img {
             width: 100%;
             height: 100%;
-            /* object-fit: cover; */
             transition: transform 0.3s ease;
         }
 
@@ -282,7 +311,7 @@ foreach ($jogos_biblioteca as $jogo) {
         .game-info h3 {
             font-size: 1.2em;
             font-weight: 700;
-            color: var(--text-primary);
+            color: #fff;
             margin: 0;
             line-height: 1.3;
         }
@@ -325,6 +354,89 @@ foreach ($jogos_biblioteca as $jogo) {
             margin-left: 5px;
         }
 
+        /* Estilo melhorado para biblioteca vazia */
+        .empty-library {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 40px;
+            color: #ecebfaff;
+            background: var(--bg-medium);
+            border-radius: 20px;
+            margin: 40px 0;
+            min-height: 400px;
+            border: 2px dashed rgba(255,255,255,0.1);
+        }
+
+        .empty-library i {
+            font-size: 80px;
+            margin-bottom: 10px;
+            color: #fff;
+            opacity: 0.7;
+        }
+
+        .empty-library h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .empty-library p {
+            font-size: 1.2em;
+            margin-bottom: 35px;
+            opacity: 0.8;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .empty-library .btn-primary {
+            background: linear-gradient(45deg, #4f219e, #853fb0);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: none;
+            cursor: pointer;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .empty-library .btn-primary i {
+            font-size: 1.1em;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-library .btn-primary:hover {
+            background: linear-gradient(45deg, #853fb0, #4f219e);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(79, 33, 158, 0.3);
+        }
+
+        /* Estilo para mensagem de nenhum resultado */
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dfdcfc;
+            font-size: 1.1em;
+            background: var(--bg-medium);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
         /* Responsividade */
         @media (max-width: 968px) {
             .user-welcome span {
@@ -342,6 +454,23 @@ foreach ($jogos_biblioteca as $jogo) {
             .nav-link i {
                 font-size: 1.2em;
             }
+
+            .empty-library {
+                padding: 60px 20px;
+                min-height: 300px;
+            }
+
+            .empty-library i {
+                font-size: 80px;
+            }
+
+            .empty-library h3 {
+                font-size: 1.6em;
+            }
+
+            .empty-library p {
+                font-size: 1.1em;
+            }
         }
 
         @media (max-width: 768px) {
@@ -355,6 +484,25 @@ foreach ($jogos_biblioteca as $jogo) {
 
             .user-welcome {
                 display: none;
+            }
+
+            .empty-library {
+                padding: 40px 20px;
+                min-height: 250px;
+            }
+
+            .empty-library i {
+                font-size: 60px;
+                margin-bottom: 20px;
+            }
+
+            .empty-library h3 {
+                font-size: 1.4em;
+            }
+
+            .empty-library p {
+                font-size: 1em;
+                margin-bottom: 25px;
             }
         }
 
@@ -488,8 +636,8 @@ foreach ($jogos_biblioteca as $jogo) {
         </div>
 
         <!-- GRID DE JOGOS -->
-        <div class="game-catalog" id="library-grid">
-            <?php if (count($jogos_biblioteca) > 0): ?>
+        <?php if (count($jogos_biblioteca) > 0): ?>
+            <div class="game-catalog" id="library-grid">
                 <?php foreach ($jogos_biblioteca as $jogo): ?>
                     <div class="game-card" data-installed="<?php echo $jogo['instalado'] ? 'true' : 'false'; ?>">
                         <!-- Card clicável para detalhes -->
@@ -530,19 +678,37 @@ foreach ($jogos_biblioteca as $jogo) {
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
-            <?php else: ?>
-                <div class="empty-library">
-                    <i class="fas fa-gamepad" style="font-size: 64px; color: #666; margin-bottom: 20px;"></i>
-                    <h3>Sua biblioteca está vazia</h3>
-                    <p>Adquira jogos na loja para adicioná-los aqui!</p>
-                    <a href="index.php" class="btn-primary">Explorar Loja</a>
-                </div>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php else: ?>
+            <!-- MENSAGEM DE BIBLIOTECA VAZIA (FORA DO GRID) -->
+            <div class="empty-library">
+                <i class="fas fa-gamepad"></i>
+                <h3>
+                    <?php if (!empty($search)): ?>
+                        Nenhum jogo encontrado
+                    <?php else: ?>
+                        Sua biblioteca está vazia
+                    <?php endif; ?>
+                </h3>
+                <p>
+                    <?php if (!empty($search)): ?>
+                        Não foram encontrados jogos correspondentes à sua pesquisa "<?php echo htmlspecialchars($search); ?>".
+                    <?php else: ?>
+                        Adquira jogos incríveis na nossa loja para começar sua coleção de games!
+                    <?php endif; ?>
+                </p>
+                <a href="index.php" class="btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Explorar Loja
+                </a>
+            </div>
+        <?php endif; ?>
 
-        <p class="no-results" id="no-results-lib" style="display:<?php echo count($jogos_biblioteca) === 0 ? 'block' : 'none'; ?>;">
-            Nenhum jogo encontrado na sua biblioteca.
-        </p>
+        <!-- Mensagem específica para busca sem resultados -->
+        <?php if (count($jogos_biblioteca) === 0 && !empty($search)): ?>
+            <p class="no-results" id="no-results-lib">
+                Sugestão: tente usar termos diferentes ou verifique a ortografia.
+            </p>
+        <?php endif; ?>
     </section>
 </main>
 
@@ -649,6 +815,17 @@ document.querySelectorAll('.install-btn, .play-btn').forEach(button => {
     button.addEventListener('click', function(e) {
         e.stopPropagation();
     });
+});
+
+// Atualizar dinamicamente a contagem de jogos visíveis
+function updateVisibleGameCount() {
+    const visibleGames = document.querySelectorAll('.game-catalog .game-card:not([style*="display: none"])').length;
+    document.getElementById('game-count').textContent = visibleGames;
+}
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    updateVisibleGameCount();
 });
 </script>
 

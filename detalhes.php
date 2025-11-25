@@ -54,6 +54,16 @@ $requisitos_recomendados = $stmt_requisitos_rec->fetchAll(PDO::FETCH_COLUMN);
 
 // Buscar categoria para o breadcrumb
 $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
+
+// Verificar se o jogo já está na biblioteca do usuário e se está instalado
+$stmt_lib = $pdo->prepare("SELECT id, instalado FROM biblioteca WHERE usuario_id = ? AND jogo_id = ?");
+$stmt_lib->execute([$_SESSION['user_id'], $jogo_id]);
+$library_info = $stmt_lib->fetch(PDO::FETCH_ASSOC);
+$in_library = $library_info !== false;
+$is_installed = $in_library ? $library_info['instalado'] : false;
+
+// Contar itens do carrinho
+$cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
 ?>
 
 <!DOCTYPE html>
@@ -63,89 +73,10 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Games Store - <?php echo htmlspecialchars($jogo['titulo']); ?></title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="detalhes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="favicon/fav.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        .buy-button {
-            background: linear-gradient(45deg, #4f219e, #853fb0, #b75ec1, #e87fd3);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .buy-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .in-library-badge {
-            background: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: inline-block;
-        }
-        
-        .detail-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .detail-gallery img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .detail-gallery img:hover {
-            transform: scale(1.05);
-        }
-        
-        .no-data-message {
-            color: #666;
-            font-style: italic;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .requisitos-lista {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .requisitos-lista li {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .detail-requirements {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .detail-requirements {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -153,21 +84,96 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
         <div class="logo">
             <a href="index.php">Games Store</a>
         </div>
-        
-        <nav>
-            <span style="color: var(--text-primary); margin-right: 15px;">Olá, <?php echo $_SESSION['username']; ?>!</span>
-            <a href="index.php">Loja</a>
-            <a href="biblioteca.php">Biblioteca</a>
-            <a href="carrinho.php" class="cart-icon">
+
+        <!-- Navegação Desktop -->
+        <nav class="desktop-nav">
+            <div class="user-nav">
+                <span class="user-welcome">
+                    <i class="fas fa-user"></i>
+                    <span>Olá, <?php echo mb_convert_case($_SESSION['username'], MB_CASE_TITLE, "UTF-8"); ?>!</span>
+                </span>
+                
+                <span class="nav-divider">|</span>
+                
+                <a href="perfil.php" class="nav-link">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Perfil</span>
+                </a>
+                
+                <a href="biblioteca.php" class="nav-link">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Biblioteca</span>
+                </a>
+                
+                <a href="historico_compras.php" class="nav-link">
+                    <i class="fas fa-history"></i>
+                    <span>Compras</span>
+                </a>
+             
+                <a href="carrinho.php" class="nav-link cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrinho</span>
+                    <?php if ($cart_count > 0): ?>
+                        <span class="cart-count"><?php echo $cart_count; ?></span>
+                    <?php endif; ?>
+                </a>
+                   
+                <a href="index.php" class="nav-link" style="color: #4CAF50;">
+                    <i class="fas fa-store"></i>
+                    <span>Loja</span>
+                </a>
+                
+                <a href="logout.php" class="nav-link" style="color: #ff6b6b;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Navegação Mobile -->
+        <button class="mobile-nav-toggle" id="mobileNavToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="mobile-nav-menu" id="mobileNavMenu">
+            <div class="user-welcome" style="display: flex; padding: 10px 15px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-user"></i>
+                <span>Olá, <?php echo $_SESSION['username']; ?>!</span>
+            </div>
+            
+            <a href="perfil.php" class="mobile-nav-link">
+                <i class="fas fa-user-cog"></i>
+                Perfil
+            </a>
+            
+            <a href="biblioteca.php" class="mobile-nav-link">
+                <i class="fas fa-gamepad"></i>
+                Biblioteca
+            </a>
+            
+            <a href="historico_compras.php" class="mobile-nav-link">
+                <i class="fas fa-history"></i>
+                Minhas Compras
+            </a>
+            
+            <a href="index.php" class="mobile-nav-link" style="color: #4CAF50;">
+                <i class="fas fa-store"></i>
+                Loja
+            </a>
+
+            <a href="carrinho.php" class="mobile-nav-link cart-icon">
                 <i class="fas fa-shopping-cart"></i>
-                <?php
-                $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
-                if ($cart_count > 0): ?>
+                Carrinho
+                <?php if ($cart_count > 0): ?>
                     <span class="cart-count"><?php echo $cart_count; ?></span>
                 <?php endif; ?>
             </a>
-            <a href="logout.php">Sair</a>
-        </nav>
+            
+            <a href="logout.php" class="mobile-nav-link" style="color: #ff6b6b;">
+                <i class="fas fa-sign-out-alt"></i>
+                Sair
+            </a>
+        </div>
     </header>
 
     <main class="main-detail">
@@ -247,22 +253,51 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
             <div class="detail-right">
                 <h1 id="detail-title"><?php echo htmlspecialchars($jogo['titulo']); ?></h1>
                 
-                <p class="detail-publisher">
-                    <strong>Publicado por:</strong> 
-                    <span id="detail-publisher-name"><?php echo htmlspecialchars($jogo['publicadora'] ?? $jogo['publicados'] ?? 'Não informada'); ?></span>
-                </p>
-                
-                <p class="detail-developer">
-                    <strong>Desenvolvido por:</strong> 
-                    <span id="detail-developer-name"><?php echo htmlspecialchars($jogo['desenvolvedora'] ?? $jogo['desenvolvidos'] ?? 'Não informada'); ?></span>
-                </p>
+                <div class="game-meta-info">
+                    <p class="detail-publisher">
+                        <strong>Publicado por:</strong> 
+                        <span id="detail-publisher-name"><?php echo htmlspecialchars($jogo['publicadora'] ?? $jogo['publicados'] ?? 'Não informada'); ?></span>
+                    </p>
+                    
+                    <p class="detail-developer">
+                        <strong>Desenvolvido por:</strong> 
+                        <span id="detail-developer-name"><?php echo htmlspecialchars($jogo['desenvolvedora'] ?? $jogo['desenvolvidos'] ?? 'Não informada'); ?></span>
+                    </p>
+                </div>
 
-                <?php
-                // Verificar se o jogo já está na biblioteca do usuário
-                $stmt_lib = $pdo->prepare("SELECT id FROM biblioteca WHERE usuario_id = ? AND jogo_id = ?");
-                $stmt_lib->execute([$_SESSION['user_id'], $jogo_id]);
-                $in_library = $stmt_lib->fetch();
-                ?>
+                <!-- Badge de Status na Biblioteca -->
+                <?php if ($in_library): ?>
+                    <div class="library-status-badge">
+                        <div class="badge-header">
+                            <i class="fas fa-gamepad"></i>
+                            <span>Status na Biblioteca</span>
+                        </div>
+                        <div class="badge-content">
+                            <?php if ($is_installed): ?>
+                                <span class="status-badge installed">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Instalado</span>
+                                </span>
+                            <?php else: ?>
+                                <span class="status-badge not-installed">
+                                    <i class="fas fa-cloud"></i>
+                                    <span>Na Biblioteca</span>
+                                </span>
+                            <?php endif; ?>
+                            <div class="badge-actions">
+                                <?php if ($is_installed): ?>
+                                    <button class="action-btn play-btn" onclick="playGame(<?php echo $jogo_id; ?>)">
+                                        <i class="fas fa-play"></i> Jogar
+                                    </button>
+                                <?php else: ?>
+                                    <button class="action-btn install-btn" onclick="installGame(<?php echo $jogo_id; ?>)">
+                                        <i class="fas fa-download"></i> Instalar
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div class="buy-box">
                     <span class="detail-price" id="detail-price">
@@ -270,10 +305,7 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
                     </span>
                     
                     <?php if ($in_library): ?>
-                        <div class="in-library-badge">
-                            <i class="fas fa-check"></i> Jogo na sua Biblioteca
-                        </div>
-                        <button class="buy-button" disabled style="background: #666;">
+                        <button class="buy-button" disabled>
                             <i class="fas fa-check"></i> Já Adquirido
                         </button>
                     <?php else: ?>
@@ -311,6 +343,23 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
     </div>
 
     <script>
+        // Menu mobile toggle
+        document.getElementById('mobileNavToggle').addEventListener('click', function() {
+            document.getElementById('mobileNavMenu').classList.toggle('active');
+        });
+
+        // Fechar menu mobile ao clicar fora
+        document.addEventListener('click', function(event) {
+            const mobileNav = document.getElementById('mobileNavMenu');
+            const toggleButton = document.getElementById('mobileNavToggle');
+            
+            if (mobileNav.classList.contains('active') && 
+                !mobileNav.contains(event.target) && 
+                !toggleButton.contains(event.target)) {
+                mobileNav.classList.remove('active');
+            }
+        });
+
         // Adicionar ao carrinho com AJAX
         document.querySelector('.add-to-cart-form')?.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -332,8 +381,10 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
                     if (cartCount) {
                         cartCount.textContent = parseInt(cartCount.textContent) + 1;
                     } else {
-                        const cartIcon = document.querySelector('.cart-icon');
-                        cartIcon.innerHTML = '<i class="fas fa-shopping-cart"></i><span class="cart-count">1</span>';
+                        const cartIcons = document.querySelectorAll('.cart-icon');
+                        cartIcons.forEach(icon => {
+                            icon.innerHTML = '<i class="fas fa-shopping-cart"></i><span class="cart-count">1</span>' + (icon.querySelector('span:not(.cart-count)') ? '<span>Carrinho</span>' : '');
+                        });
                     }
                     
                     // Fechar modal após 2 segundos e recarregar
@@ -372,6 +423,36 @@ $categoria_nome = ucfirst(str_replace('-', ' ', $jogo['categoria']));
                 }
             });
         });
+
+        // Funções para instalar/jogar
+        function installGame(gameId) {
+            if (confirm('Deseja instalar este jogo?')) {
+                fetch('install_game.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'jogo_id=' + gameId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Jogo instalado com sucesso!');
+                        window.location.reload();
+                    } else {
+                        alert('Erro ao instalar o jogo: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao instalar o jogo');
+                });
+            }
+        }
+
+        function playGame(gameId) {
+            alert('Iniciando jogo... (Simulação)');
+        }
     </script>
 </body>
 </html>

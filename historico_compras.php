@@ -18,6 +18,9 @@ try {
     die("Erro de conexão: " . $e->getMessage());
 }
 
+// Contar itens do carrinho
+$cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
+
 // Alternativa se não existir coluna quantidade
 $stmt_vendas = $pdo->prepare("
     SELECT 
@@ -65,6 +68,159 @@ unset($venda);
     <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* Estilos melhorados para a navegação */
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-divider {
+            color: rgba(255,255,255,0.3);
+            margin: 0 5px;
+        }
+
+        .user-welcome {
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-welcome i {
+            color: #853fb0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(45deg, #4f219e, #853fb0);
+            box-shadow: 0 4px 12px rgba(79, 33, 158, 0.3);
+        }
+
+        .cart-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-count {
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .mobile-nav-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .mobile-nav-menu.active {
+            display: block;
+        }
+
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .mobile-nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Responsividade */
+        @media (max-width: 968px) {
+            .user-welcome span {
+                display: none;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link {
+                padding: 10px;
+            }
+
+            .nav-link i {
+                font-size: 1.2em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+
+            .mobile-nav-toggle {
+                display: block;
+            }
+
+            .user-welcome {
+                display: none;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-nav-menu {
+                display: none !important;
+            }
+        }
+
+        /* Estilos do histórico de compras */
         .purchase-history {
             max-width: 1200px;
             margin: 0 auto;
@@ -363,22 +519,88 @@ unset($venda);
         <div class="logo">
             <a href="index.php">Games Store</a>
         </div>
-        <nav>
-            <span style="color: var(--text-primary); margin-right: 15px;">Olá, <?php echo $_SESSION['username']; ?>!</span>
-            <a href="perfil.php">Perfil</a>
-            <a href="biblioteca.php">Biblioteca</a>
-            <a href="historico_compras.php" class="active">Minhas Compras</a>
-            <a href="carrinho.php" class="cart-icon">
+
+        <!-- Navegação Desktop -->
+        <nav class="desktop-nav">
+            <div class="user-nav">
+                <span class="user-welcome">
+                    <i class="fas fa-user"></i>
+                    <span>Olá, <?php echo mb_convert_case($_SESSION['username'], MB_CASE_TITLE, "UTF-8"); ?>!</span>
+                </span>
+                
+                <span class="nav-divider">|</span>
+                
+                <a href="perfil.php" class="nav-link">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Perfil</span>
+                </a>
+                
+                <a href="biblioteca.php" class="nav-link">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Biblioteca</span>
+                </a>
+                
+                <a href="historico_compras.php" class="nav-link active">
+                    <i class="fas fa-history"></i>
+                    <span>Compras</span>
+                </a>
+                
+                <a href="carrinho.php" class="nav-link cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrinho</span>
+                    <?php if ($cart_count > 0): ?>
+                        <span class="cart-count"><?php echo $cart_count; ?></span>
+                    <?php endif; ?>
+                </a>
+                
+                <a href="logout.php" class="nav-link" style="color: #ff6b6b;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Navegação Mobile -->
+        <button class="mobile-nav-toggle" id="mobileNavToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="mobile-nav-menu" id="mobileNavMenu">
+            <div class="user-welcome" style="display: flex; padding: 10px 15px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-user"></i>
+                <span>Olá, <?php echo $_SESSION['username']; ?>!</span>
+            </div>
+            
+            <a href="perfil.php" class="mobile-nav-link">
+                <i class="fas fa-user-cog"></i>
+                Perfil
+            </a>
+            
+            <a href="biblioteca.php" class="mobile-nav-link">
+                <i class="fas fa-gamepad"></i>
+                Biblioteca
+            </a>
+            
+            <a href="historico_compras.php" class="mobile-nav-link">
+                <i class="fas fa-history"></i>
+                Minhas Compras
+            </a>
+            
+            <a href="carrinho.php" class="mobile-nav-link">
                 <i class="fas fa-shopping-cart"></i>
-                <?php
-                $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
-                if ($cart_count > 0): ?>
-                    <span class="cart-count"><?php echo $cart_count; ?></span>
+                Carrinho
+                <?php if ($cart_count > 0): ?>
+                    <span style="background: #ff4757; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: auto;">
+                        <?php echo $cart_count; ?>
+                    </span>
                 <?php endif; ?>
             </a>
-            <a href="logout.php">Sair</a>
             
-        </nav>
+            <a href="logout.php" class="mobile-nav-link" style="color: #ff6b6b;">
+                <i class="fas fa-sign-out-alt"></i>
+                Sair
+            </a>
+        </div>
     </header>
 
     <main class="purchase-history">
@@ -536,6 +758,23 @@ unset($venda);
     </main>
 
     <script>
+        // Menu mobile toggle
+        document.getElementById('mobileNavToggle').addEventListener('click', function() {
+            document.getElementById('mobileNavMenu').classList.toggle('active');
+        });
+
+        // Fechar menu mobile ao clicar fora
+        document.addEventListener('click', function(event) {
+            const mobileNav = document.getElementById('mobileNavMenu');
+            const toggleButton = document.getElementById('mobileNavToggle');
+            
+            if (mobileNav.classList.contains('active') && 
+                !mobileNav.contains(event.target) && 
+                !toggleButton.contains(event.target)) {
+                mobileNav.classList.remove('active');
+            }
+        });
+
         // Filtros simples (podem ser implementados com AJAX posteriormente)
         function filterPurchases(filter) {
             const purchases = document.querySelectorAll('.purchase-card');

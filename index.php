@@ -265,7 +265,6 @@ $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
 </head>
 
 <body class="home-page">
-
     <header>
         <div class="logo">
             <a href="index.php">Games Store</a>
@@ -384,7 +383,7 @@ $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
     <main>
         <!-- Sidebar fixa -->
         <aside class="sidebar">
-            <h2>CATEGORIAS</h2>
+            <h2>Categorias</h2>
             <ul id="category-list">
                 <li data-category="all" class="<?php echo $categoria === 'all' ? 'active' : ''; ?>">🎮 Todos os Jogos</li>
                 <li data-category="acao-aventura" class="<?php echo $categoria === 'acao-aventura' ? 'active' : ''; ?>">🗺️ Ação / Aventura</li>
@@ -403,6 +402,9 @@ $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
 
         <!-- Área principal rolável -->
         <section class="content">
+            <span class="user-welcome-home">
+                <span>Bem Vindo, <?php echo mb_convert_case($_SESSION['username'], MB_CASE_TITLE, "UTF-8"); ?>!</span>
+            </span>
 
             <div class="content-header">
                 <p class="breadcrumb">Loja / <?php 
@@ -478,11 +480,6 @@ $cart_count = isset($_SESSION['carrinho']) ? count($_SESSION['carrinho']) : 0;
                     </div>
                 <?php endif; ?>
             </div>
-
-            <p class="no-results" style="display:<?php echo count($jogos) === 0 ? 'block' : 'none'; ?>;">
-                Nenhum jogo encontrado nesta categoria ou busca.
-            </p>
-
         </section>
     </main>
 

@@ -87,17 +87,13 @@ nav a:hover {
     position: fixed;
     top: 80px;
     left: 20px;
-
     width: 260px;
     height: calc(100vh - 100px);
-
     background-color: var(--bg-medium);
-    border-radius: 30px;
+    border-radius: 30px !important;
     padding: 14px;
-
     overflow-y: auto;
     overflow-x: hidden;
-
     z-index: 9999;
 }
 
@@ -226,7 +222,7 @@ nav a:hover {
 
 .game-card {
     background: linear-gradient(125deg, var(--bg-medium), #0c0c1d);
-    border-radius: 20px;
+    border-radius: 30px;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
@@ -283,7 +279,7 @@ nav a:hover {
 .game-info h3 {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--text-light);
+    color: #fff;
     margin-bottom: 8px;
     line-height: 1.3;
     display: -webkit-box;
@@ -659,11 +655,174 @@ nav a:hover {
         font-size: 1.1rem;
     }
 }
-
 /* ============================= */
-/* DETALHES DO JOGO (ANTIGO)     */
+/* DETALHES DO JOGO - ESTILOS   */
 /* ============================= */
 
+/* Estilos da Navegação (importados da biblioteca) */
+.user-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-divider {
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0 5px;
+}
+
+.user-welcome {
+    color: var(--text-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-welcome-home {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    font-size: 26px;
+    font-weight: 600;
+    color: #fff;
+    /* escolha sua cor */
+    margin-bottom: 20px;
+}
+
+.user-welcome i {
+    color: #853fb0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    text-decoration: none;
+    color: var(--text-light);
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    background: linear-gradient(45deg, #4f219e, #853fb0);
+    box-shadow: 0 4px 12px rgba(79, 33, 158, 0.3);
+}
+
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.mobile-nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    min-width: 200px;
+    z-index: 1000;
+}
+
+.mobile-nav-menu.active {
+    display: block;
+}
+
+.mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.mobile-nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.cart-icon {
+    position: relative;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff6b6b;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Responsividade da Navegação */
+@media (max-width: 968px) {
+    .user-welcome span {
+        display: none;
+    }
+
+    .nav-link span {
+        display: none;
+    }
+
+    .nav-link {
+        padding: 10px;
+    }
+
+    .nav-link i {
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 768px) {
+    .desktop-nav {
+        display: none;
+    }
+
+    .mobile-nav-toggle {
+        display: block;
+    }
+
+    .user-welcome {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-nav-menu {
+        display: none !important;
+    }
+}
+
+/* Estilos principais da página de detalhes */
 .main-detail {
     padding: 20px 40px;
     max-width: 1200px;
@@ -702,7 +861,7 @@ nav a:hover {
 
 .detail-banner {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 20px;
     overflow: hidden;
     margin-bottom: 20px;
     background-color: var(--bg-medium);
@@ -738,7 +897,7 @@ nav a:hover {
     flex: 1;
     background-color: var(--bg-medium);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 20px;
     height: fit-content;
     position: sticky;
     top: 20px;
@@ -748,13 +907,18 @@ nav a:hover {
     font-size: 28px;
     color: var(--text-light);
     line-height: 1.3;
+    margin-bottom: 15px;
+}
+
+.game-meta-info {
+    margin-bottom: 20px;
 }
 
 .detail-right .detail-publisher,
 .detail-right .detail-developer {
     font-size: 14px;
     color: #999;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .detail-right .detail-publisher span,
@@ -762,6 +926,94 @@ nav a:hover {
     color: #ccc;
 }
 
+/* Badge de Status na Biblioteca */
+.library-status-badge {
+    background: var(--bg-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.badge-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.badge-header i {
+    color: #853fb0;
+}
+
+.badge-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.status-badge.installed {
+    background: linear-gradient(45deg, #4CAF50, #66BB6A);
+    color: white;
+}
+
+.status-badge.not-installed {
+    background: linear-gradient(45deg, #757575, #9E9E9E);
+    color: white;
+}
+
+.badge-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.install-btn {
+    background: linear-gradient(45deg, #2196F3, #21CBF3);
+    color: white;
+}
+
+.install-btn:hover {
+    background: linear-gradient(45deg, #1976D2, #0288D1);
+    transform: translateY(-2px);
+}
+
+.play-btn {
+    background: linear-gradient(45deg, #4CAF50, #66BB6A);
+    color: white;
+}
+
+.play-btn:hover {
+    background: linear-gradient(45deg, #388E3C, #43A047);
+    transform: translateY(-2px);
+}
+
+/* Seção de Compra */
 .buy-box {
     margin-top: 20px;
     padding-top: 20px;
@@ -777,54 +1029,65 @@ nav a:hover {
 }
 
 .buy-button {
-    background-color: var(--text-primary);
-    color: var(--text-light);
+    background: linear-gradient(45deg, #4f219e, #853fb0, #b75ec1, #e87fd3);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    cursor: pointer;
     font-size: 18px;
     font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    padding: 15px;
     width: 100%;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
-.buy-button:hover {
-    background-color: var(--hover-color);
+.buy-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.buy-button i {
-    margin-right: 10px;
+.buy-button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
+/* Galeria */
 .detail-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 15px;
     margin-bottom: 20px;
 }
 
 .detail-gallery img {
     width: 100%;
-    height: 100px;
+    height: 120px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.3s ease;
 }
 
 .detail-gallery img:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
+/* Requisitos do Sistema */
 .detail-requirements {
-    display: flex;
-    gap: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
     background-color: rgba(0, 0, 0, 0.2);
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 8px;
     margin-top: 10px;
 }
 
@@ -837,19 +1100,136 @@ nav a:hover {
     color: var(--hover-color);
     border-bottom: 1px solid var(--accent);
     padding-bottom: 5px;
+    margin-bottom: 10px;
 }
 
-.req-column ul {
+.requisitos-lista {
     list-style: none;
-    margin-top: 10px;
     padding-left: 0;
+    margin: 0;
 }
 
-.req-column li {
+.requisitos-lista li {
     font-size: 14px;
     color: #ccc;
-    margin-bottom: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     line-height: 1.4;
+}
+
+.requisitos-lista li:last-child {
+    border-bottom: none;
+}
+
+/* Informações do Jogo */
+.game-info-details {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+.game-info-details p {
+    margin: 8px 0;
+    color: #ccc;
+}
+
+.game-info-details strong {
+    color: var(--text-primary);
+}
+
+/* Modais */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--bg-medium);
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.3s;
+}
+
+.close-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .main-detail {
+        padding: 20px;
+        margin: 80px auto 20px auto;
+    }
+
+    .content-detail {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .detail-right {
+        position: static;
+    }
+
+    .detail-requirements {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .detail-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .badge-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-detail {
+        padding: 15px;
+    }
+
+    .detail-right h1 {
+        font-size: 24px;
+    }
+
+    .detail-price {
+        font-size: 24px;
+    }
+
+    .buy-button {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+
+    .detail-gallery {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 /* ============================= */
